@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  SLOT_COUNT,
   buildPrivateWord,
   createRevealResult,
   normalizeWord,
@@ -26,8 +27,13 @@ describe("normalizeWord", () => {
 describe("validateNormalizedWord", () => {
   it("rejects too short, too long, and invalid characters", () => {
     expect(validateNormalizedWord("あ")).toMatch("2文字以上");
-    expect(validateNormalizedWord("あいうえおかきく")).toMatch("7文字以内");
+    expect(validateNormalizedWord("あいうえおかきくけこさ")).toMatch("10文字以内");
     expect(validateNormalizedWord("abc")).toMatch("使える文字");
+  });
+
+  it("accepts ten character words", () => {
+    expect(validateNormalizedWord("あいうえおかきくけこ")).toBeNull();
+    expect(buildPrivateWord("あいうえおかきくけこ").slots).toHaveLength(SLOT_COUNT);
   });
 });
 

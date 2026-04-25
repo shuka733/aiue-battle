@@ -774,8 +774,8 @@ function WordView({
           autoComplete="off"
           inputMode="text"
           lang="ja"
-          maxLength={14}
-          placeholder="2〜7文字"
+          maxLength={20}
+          placeholder="2〜10文字"
           spellCheck={false}
           type="text"
           value={wordInput}

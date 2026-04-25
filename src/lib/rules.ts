@@ -1,6 +1,6 @@
 import type { Attack, PrivateWordState, RevealResult, SlotValue } from "../types";
 
-export const SLOT_COUNT = 7;
+export const SLOT_COUNT = 10;
 
 export const HIRAGANA_BOARD_ROWS = [
   ["あ", "い", "う", "え", "お"],
@@ -62,7 +62,7 @@ export function validateNormalizedWord(normalized: string): string | null {
   }
 
   if (normalized.length > SLOT_COUNT) {
-    return "7文字以内で入力してください。";
+    return "10文字以内で入力してください。";
   }
 
   const invalid = Array.from(normalized).find((char) => !ATTACK_LETTER_SET.has(char));

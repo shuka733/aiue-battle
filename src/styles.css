@@ -279,7 +279,8 @@ h2 {
 .own-word {
   display: grid;
   gap: 6px;
-  grid-template-columns: repeat(7, minmax(0, 42px));
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  max-width: 474px;
 }
 
 .slot,
@@ -290,7 +291,7 @@ h2 {
   border: 1px solid #c9d3e2;
   border-radius: 8px;
   display: inline-flex;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 800;
   justify-content: center;
 }
@@ -491,7 +492,15 @@ h2 {
   .slot-preview,
   .slot-row,
   .own-word {
-    grid-template-columns: repeat(7, minmax(0, 1fr));
+    grid-template-columns: repeat(10, minmax(0, 1fr));
+  }
+
+  .slot {
+    font-size: 16px;
+  }
+
+  .secret {
+    font-size: 14px;
   }
 
   .kana-row {
