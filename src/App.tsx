@@ -32,6 +32,13 @@ import {
   SLOT_COUNT,
   validateNormalizedWord,
 } from "./lib/rules";
+import {
+  generateRoomCode,
+  isRoomCode,
+  isUnavailableRoomCodeError,
+  normalizeRoomCodeInput,
+  ROOM_CODE_RETRY_LIMIT,
+} from "./lib/room";
 
 type Role = "host" | "guest" | null;
 type Screen = "home" | "room";
@@ -51,7 +58,7 @@ function sendMessage(conn: DataConnection | null | undefined, message: NetworkMe
 }
 
 function getRoomFromUrl() {
-  return new URLSearchParams(window.location.search).get("room") ?? "";
+  return normalizeRoomCodeInput(new URLSearchParams(window.location.search).get("room") ?? "");
 }
 
 function getPlayerName(players: Player[], playerId: string | null) {
@@ -358,33 +365,49 @@ export default function App() {
       return;
     }
 
-    const peer = new Peer();
-    peerRef.current = peer;
     setNetworkStatus("部屋を作成中");
 
-    peer.on("open", (roomId) => {
-      const hostPlayer = createPlayer(roomId, playerName, true, 0);
-      const state = createInitialState(roomId, hostPlayer);
-      setRole("host");
-      setLocalPlayerId(roomId);
-      setPublicState(state);
-      publicStateRef.current = state;
-      setScreen("room");
-      setNetworkStatus("ホスト");
-    });
+    const createHostPeer = (attempt: number) => {
+      const requestedRoomCode = generateRoomCode();
+      const peer = new Peer(requestedRoomCode);
+      peerRef.current?.destroy();
+      peerRef.current = peer;
 
-    peer.on("connection", setupHostConnection);
-    peer.on("error", (error) => {
-      setNetworkStatus("接続エラー");
-      setNotice(error.message);
-    });
+      peer.on("open", (roomId) => {
+        const hostPlayer = createPlayer(roomId, playerName, true, 0);
+        const state = createInitialState(roomId, hostPlayer);
+        setRole("host");
+        setLocalPlayerId(roomId);
+        setPublicState(state);
+        publicStateRef.current = state;
+        setScreen("room");
+        setNetworkStatus("ホスト");
+      });
+
+      peer.on("connection", setupHostConnection);
+      peer.on("error", (error) => {
+        if (isUnavailableRoomCodeError(error) && attempt < ROOM_CODE_RETRY_LIMIT) {
+          createHostPeer(attempt + 1);
+          return;
+        }
+
+        setNetworkStatus("接続エラー");
+        setNotice(error.message);
+      });
+    };
+
+    createHostPeer(1);
   }, [name, setupHostConnection]);
 
   const joinRoom = useCallback(() => {
     const playerName = name.trim();
-    const targetRoom = roomInput.trim();
+    const targetRoom = normalizeRoomCodeInput(roomInput);
     if (!playerName || !targetRoom) {
       setNotice("名前と部屋コードを入力してください。");
+      return;
+    }
+    if (!isRoomCode(targetRoom)) {
+      setNotice("部屋コードは6桁の数字で入力してください。");
       return;
     }
 
@@ -650,9 +673,12 @@ function HomeScreen({
           <label htmlFor="room">部屋コード</label>
           <input
             id="room"
-            placeholder="ホストのコード"
+            inputMode="numeric"
+            maxLength={6}
+            pattern="[0-9]*"
+            placeholder="6桁のコード"
             value={roomInput}
-            onChange={(event) => setRoomInput(event.target.value)}
+            onChange={(event) => setRoomInput(normalizeRoomCodeInput(event.target.value))}
           />
           <button type="button" onClick={joinRoom}>
             <LogIn size={18} />

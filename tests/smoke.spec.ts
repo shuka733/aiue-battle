@@ -20,6 +20,7 @@ test("connects host and guest through a room code", async ({ browser }) => {
 
   const roomCode = (await host.locator(".share-band strong").textContent())?.trim();
   expect(roomCode).toBeTruthy();
+  expect(roomCode).toMatch(/^\d{6}$/);
 
   await guest.goto(`/?room=${encodeURIComponent(roomCode ?? "")}`);
   await guest.getByLabel("名前").fill("ゲスト");
