@@ -744,9 +744,14 @@ function WordView({
         <label htmlFor="secret-word">秘密の言葉</label>
         <input
           id="secret-word"
+          autoCapitalize="off"
+          autoComplete="off"
+          inputMode="text"
+          lang="ja"
           maxLength={14}
           placeholder="2〜7文字"
-          type="password"
+          spellCheck={false}
+          type="text"
           value={wordInput}
           disabled={localReady}
           onChange={(event) => setWordInput(event.target.value)}

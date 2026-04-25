@@ -37,4 +37,15 @@ test("connects host and guest through a room code", async ({ browser }) => {
 
   await expect(host.locator("h1", { hasText: "動物" })).toBeVisible();
   await expect(guest.locator("h1", { hasText: "動物" })).toBeVisible({ timeout: 15_000 });
+
+  const secretWord = host.getByLabel("秘密の言葉");
+  await expect(secretWord).toHaveAttribute("type", "text");
+  await secretWord.fill("りんご");
+  await expect(secretWord).toHaveValue("りんご");
+  await expect(host.locator(".slot-preview .slot").nth(0)).toHaveText("り");
+  await expect(host.locator(".slot-preview .slot").nth(1)).toHaveText("ん");
+  await expect(host.locator(".slot-preview .slot").nth(2)).toHaveText("こ");
+  await expect(host.getByRole("button", { name: /この言葉で準備/ })).toBeEnabled();
+  await host.getByRole("button", { name: /この言葉で準備/ }).click();
+  await expect(host.getByText("準備完了")).toBeVisible();
 });
